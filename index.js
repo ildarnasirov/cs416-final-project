@@ -1,117 +1,104 @@
-const LEVEL_HIERARCHY = { COUNTRY: 0, STATE: 1, COUNTY: 2 }
-
 // https://stackoverflow.com/questions/5731193/how-to-format-numbers
 const formatNumber = (x = 0) =>
-    x.toLocaleString(undefined, { minimumFractionDigits: 0 });
+    x.toLocaleString (undefined, { minimumFractionDigits: 0 })
 
-const addFixedAnnotations = (x, y, margin, timeParser, data) => {
-    const annotations = [{
-        note: {
-            label: 'The White House Coronavirus Task Force is established with U.S. Health and Human Services Secretary, Alex Azar, as the head of the Task Force.'
-        },
-        x: margin + x(timeParser('2020-01-29')),
-        y: margin + y(data['2020-01-29'].cases),
-        dy: -50,
-        dx: 50,
-        type: d3.annotationCalloutCircle,
-        subject: {
-            radius: 5
-        },
-    },{
-        note: {
-            label: 'The World Health Organization declares COVID-19 a pandemic.'
-        },
-        x: margin + x(timeParser('2020-03-11')),
-        y: margin + y(data['2020-03-11'].cases),
-        dy: -20,
-        dx: -100,
-        type: d3.annotationCalloutCircle,
-        subject: { radius: 5 }
-    },{
-        note: {
-            label: 'President Donald J. Trump declares a nationwide emergency.'
-        },
-        x: margin + x(timeParser('2020-03-13')),
-        y: margin + y(data['2020-03-13'].cases),
-        dy: -30,
-        dx: -100,
-        type: d3.annotationCalloutCircle,
-        subject: { radius: 5 }
-    }]
+class State {
+    static LEVEL_HIERARCHY = { COUNTRY: 0, STATE: 1, COUNTY: 2 }
+    static async load_data_with_dates (url, hierarchy) {
+        const dates = {}
+        const data = await d3.csv(url)
+        data.forEach(datum => { dates[datum.date] = {} })
     
-    return d3.annotation()
-        .annotations(annotations);
-}
-
-const load_data_with_dates = async (url, hierarchy) => {
-    const dates = {}
-    const data = await d3.csv(url)
-    data.forEach(datum => { dates[datum.date] = {} })
-
-    switch (hierarchy) {
-        case LEVEL_HIERARCHY.COUNTRY:
-            data.forEach(({ date, cases, deaths }) => {
-                dates[date] = { 
-                    cases: parseInt(cases), deaths: parseInt(deaths)
-                }
-            })
-            return dates
-        case LEVEL_HIERARCHY.STATE:
-            data.forEach(({ date, state, cases, deaths }) => {
-                dates[date][state] = { 
-                    cases: parseInt(cases), deaths: parseInt(deaths)
-                }
-            })
-            return dates
-        default:
-            return dates
+        switch (hierarchy) {
+            case State.LEVEL_HIERARCHY.COUNTRY:
+                data.forEach(({ date, cases, deaths }) => {
+                    dates[date] = { 
+                        cases: parseInt(cases), deaths: parseInt(deaths)
+                    }
+                })
+                return dates
+            case State.LEVEL_HIERARCHY.STATE:
+                data.forEach(({ date, state, cases, deaths }) => {
+                    dates[date][state] = { 
+                        cases: parseInt(cases), deaths: parseInt(deaths)
+                    }
+                })
+                return dates
+            default:
+                return dates
+        }
     }
-}
 
-const lineChart = async (data_dir, scene, canvasSelector, tooltipSelector) => {
-    const url = `${data_dir}/us-${scene}.csv`
-    const data = await load_data_with_dates(url, LEVEL_HIERARCHY.COUNTRY)
-    // Adapted from https://d3-graph-gallery.com/graph/line_basic.html
-    const dates = Object.keys(data)
-    const objects = Object.values(data)
-    const margin = 50, height = 300, width = 500
-    const timeParser = d3.timeParse("%Y-%m-%d")
+    constructor (scene) {
+        this.scene = scene
+        this.margin = 50, this.height = 300, this.width = 500
+        this.timeParser = d3.timeParse("%Y-%m-%d")
+    }
 
-    // Define Axis
-    const x = d3.scaleTime()
-        .domain(d3.extent(dates, timeParser))
-        .range([ 0, width ])
+    async load_data () {
+        const countryData = await State.load_data_with_dates (
+            `/data/us-${this.scene}.csv`, 
+            State.LEVEL_HIERARCHY.COUNTRY
+        )
+        const stateData = await State.load_data_with_dates (
+            `/data/us-states-${this.scene}.csv`, 
+            State.LEVEL_HIERARCHY.STATE
+        )
+        const countryObjects = Object.values (countryData)
+        const stateObjects = Object.values (stateData)
 
-    const y = d3.scaleLinear()
-        .domain([0, d3.max(objects, d => d.cases)])
-        .range([ height, 0 ])
+        this.dates = Object.keys (countryData)
+        this.data = {}
+        this.data[State.LEVEL_HIERARCHY.STATE] = { 
+            objects: stateObjects, 
+            dates: stateData
+        }
+        this.data[State.LEVEL_HIERARCHY.COUNTRY] = { 
+            objects: countryObjects,
+            dates: countryData
+        }
+    }
 
-    // Define main canvas - linechart
-    d3.select(canvasSelector)
-        .attr('width', width + 2 * margin)
-        .attr('height', height + 2 * margin)
-        .append('g')
-            .attr('transform', `translate(${margin},${margin})`)
-        .datum(dates).append('path')
+    lineChart (canvasSelector, tooltipSelector) {
+        // Adapted from https://d3-graph-gallery.com/graph/line_basic.html    
+        // Define Axis
+        const x = d3.scaleTime()
+            .domain(d3.extent(this.dates, this.timeParser))
+            .range([ 0, this.width ])
+    
+        const y = d3.scaleLinear()
+            .domain([0, d3.max(this.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases)])
+            .range([ this.height, 0 ])
+
+        console.log(this.data)
+        console.log(this)
+    
+        // Define main canvas - linechart
+        d3.select(canvasSelector)
+            .attr('width', this.width + 2 * this.margin)
+            .attr('height', this.height + 2 * this.margin)
+            .append('g')
+                .attr('transform', `translate(${this.margin},${this.margin})`)
+            .datum(this.dates).append('path')
             .attr('fill', 'none')
             .attr('stroke', 'steelblue')
             .attr('stroke-width', 1.5)
             .attr('d', d3.line()
-                .x(date => x(timeParser(date)))
-                .y(date => y(data[date].cases))
+                .x(date => x(this.timeParser(date)))
+                .y(date => y(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
             )
-
-    const tooltip = d3.select(tooltipSelector)
     
-    // define main canvas - scatter
-    d3.select(canvasSelector)
-        .attr('width', width + 2 * margin)
-        .attr('height', height + 2 * margin)
-        .append('g')
-            .attr('transform', `translate(${margin},${margin})`)
-        .selectAll().data(dates).enter().append('circle')
-            .attr('cx', date => x(timeParser(date)))
-            .attr('cy', date => y(data[date].cases))
+        const tooltip = d3.select(tooltipSelector)
+        
+        // define main canvas - points and tooltip
+        d3.select(canvasSelector)
+            .attr('width', this.width + 2 * this.margin)
+            .attr('height', this.height + 2 * this.margin)
+            .append('g')
+                .attr('transform', `translate(${this.margin},${this.margin})`)
+            .selectAll().data(this.dates).enter().append('circle')
+            .attr('cx', date => x(this.timeParser(date)))
+            .attr('cy', date => y(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
             .attr('r', 2)
             .style('stroke', 'black')
             .style('stroke-width', '0.1em')
@@ -123,35 +110,140 @@ const lineChart = async (data_dir, scene, canvasSelector, tooltipSelector) => {
                         .style('left', `${event.pageX}px`)
                         .style('top', `${event.pageY}px`)
                         .html(`
-                            Cases: ${formatNumber(data[date].cases)}
+                            Cases: ${formatNumber(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases)}
                             <br>
                             Date: ${date}
                         `)
                 }, 100)
             })
-            .on('mouseout', function (_, _) {
+            .on('mouseout', function () {
                 this.style['stroke-width'] = '0.1em'
                 this.style.stroke = 'black'
                 setTimeout(() => tooltip.style('opacity', 0), 5000)
             })
+        
+        // Define Axis
+        d3.select(canvasSelector)
+            .append('g')
+        .attr('transform', `translate(${this.margin},${this.margin})`)
+        .call(d3.axisLeft(y))
     
-    // Define Axis
-    d3.select(canvasSelector)
-        .append('g')
-    .attr('transform', `translate(${margin},${margin})`)
-    .call(d3.axisLeft(y))
+        // https://stackoverflow.com/questions/15471224/how-to-format-time-on-xaxis-use-d3-js
+        d3.select(canvasSelector)
+            .append('g')
+        .attr('transform', `translate(${this.margin},${this.margin + this.height})`)
+        .call(
+            d3.axisBottom(x).tickFormat(d3.timeFormat('%m-%d'))
+        )
 
-    // https://stackoverflow.com/questions/15471224/how-to-format-time-on-xaxis-use-d3-js
-    d3.select(canvasSelector)
+        // return axis for data transformation
+        return { x, y }
+    }
+
+    scatterPlot (date, canvasSelector, tooltipSelector) {
+        const filteredData = this.data[State.LEVEL_HIERARCHY.STATE].dates[date]
+        const states = Object.keys (filteredData)
+
+        // Define Axis
+        const x = d3.scaleLinear()
+            .domain([ 1, d3.max(states, state => filteredData[state].cases) + 1 ])
+            .range([ 0, this.width ])
+    
+        const y = d3.scaleLinear()
+            .domain([ 1, d3.max(states, state => filteredData[state].deaths) + 1 ])
+            .range([ this.height, 0 ])
+        const tooltip = d3.select(tooltipSelector)
+
+        d3.select(canvasSelector)
+            .attr('width', this.width + 2 * this.margin)
+            .attr('height', this.height + 2 * this.margin)
         .append('g')
-    .attr('transform', `translate(${margin},${margin + height})`)
-    .call(
-        d3.axisBottom(x).tickFormat(d3.timeFormat('%m-%d'))
+            .attr('transform', `translate(${this.margin},${this.margin})`)
+            .text(`Cases vs. Deaths on ${date}`)
+        .selectAll()
+            .data(states).enter()
+        .append('circle')
+            .attr('cx', state => x(filteredData[state].cases))
+            .attr('cy', state => y(filteredData[state].deaths))
+            .attr('r', 4)
+                // Source https://stackoverflow.com/questions/13563471/random-colors-for-circles-in-d3-js-graph
+            .style('fill', () => `hsl(${Math.random() * 360}, 100%, 50%)`)
+            .style('stroke', 'black')
+            .style('stroke-width', '0.1em')
+        .on('mouseover', function (event, state) {
+            this.style['stroke-width'] = '0.25em'
+            this.style.stroke = 'darkblue'
+            console.log(state)
+            setTimeout(() => {
+                tooltip.style('opacity', 1)
+                    .style('left', `${event.pageX}px`)
+                    .style('top', `${event.pageY}px`)
+                    .html(`
+                        <strong>${state}</strong>
+                        <hr/>
+                        Cases: ${filteredData[state].cases}
+                        <br/>
+                        Deaths: ${filteredData[state].deaths}
+                    `)
+            }, 100)
+
+        })
+        .on('mouseout', function () {
+            this.style['stroke-width'] = '0.1em'
+            this.style.stroke = 'black'
+            setTimeout(() => tooltip.style('opacity', 0), 5000)
+        })
+
+        // https://www.geeksforgeeks.org/d3-js-axis-tickvalues-function/
+        // https://observablehq.com/@d3/d3-format
+        d3.select(canvasSelector)
+            .append('g')
+        .attr('transform',`translate(${this.margin},${this.margin})`)
+        .call (
+            d3.axisLeft(y).tickFormat(d3.format(".0s"))
+        )
+
+        d3.select(canvasSelector)
+            .append('g')
+        .attr('transform',`translate(${this.margin},${this.height + this.margin})`)
+        .call (
+            d3.axisBottom(x).tickFormat(d3.format(".0s"))
+        )
+
+        return { x, y }
+    }
+
+    static addFixedAnnotations (canvasSelector, annotations) {
+        d3.select(canvasSelector)
+            .append('g')
+        .attr('class', 'annotation-group')
+        .call(d3.annotation().annotations(annotations))
+    }
+
+    static generateAnnotation ({ x, y, dy, dx, label, margin, radius }) {
+        return {
+            note: { label }, dy, dx,
+            x: margin + x, y: margin + y,
+            type: d3.annotationCalloutCircle,
+            subject: { radius }
+        }
+    }
+}
+
+async function main (data, scene, selectors) {
+    const RADIUS = 5
+    const state = new State (scene); await state.load_data ()
+    const { x: lineChartX, y: lineChartY } = state.lineChart (
+        selectors[0], selectors[1]
     )
+    const annotations = data.map(datum => State.generateAnnotation ({
+        x: lineChartX (state.timeParser(datum.date)),
+        y: lineChartY (state.data[State.LEVEL_HIERARCHY.COUNTRY].dates[datum.date].cases),
+        dy: datum.offset.dy, dx: datum.offset.dx,
+        radius: RADIUS, margin: state.margin,
+        label: datum.label
+    }))
+    State.addFixedAnnotations (selectors[0], annotations)
 
-    // add annotations
-    d3.select(canvasSelector)
-        .append('g')
-    .attr('class', 'annotation-group')
-    .call(addFixedAnnotations(x, y, margin, timeParser, data))
+    state.scatterPlot(data[0].date, selectors[2], selectors[3])
 }

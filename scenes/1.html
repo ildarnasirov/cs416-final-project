@@ -2,23 +2,38 @@
 <html>
     <head>
         <title>Data Visualization - Narrative Visualization - Scene 1</title>
-        <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
+        <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
         <script src="../index.js"></script>
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
-    <body>
+    <body onload="main (DATA, 1, ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'])">
         <h1>The beginning of COVID-19 Pandemic</h1>
         <div class="content">
             <section class="col-1">
-                <svg id="canvas" onload="lineChart('../data', 1, '#canvas', '#tooltip')"></svg>
+                <svg id="canvas"></svg>
                 <div id="tooltip" class="tooltip"></div>
             </section>
-            <!-- <section class="col-2">
-                <svg id="canvas-2" onload="lineChart('../data', 1, '#canvas-2', '#tooltip-2')"></svg>
+            <section class="col-2">
+                <svg id="canvas-2"></svg>
                 <div id="tooltip-2" class="tooltip"></div>
-            </section> -->
+            </section>
         </div>
     </body>
 </html>
+<script>
+    const DATA = [{
+        label: 'The White House Coronavirus Task Force is established.',
+        date: '2020-01-29',
+        offset: { dy: -50, dx: 50}
+    },{
+        label: 'The World Health Organization declares COVID-19 a pandemic.',
+        date: '2020-03-11',
+        offset: { dy: -20, dx: -100 }
+    },{
+        label: 'President Donald J. Trump declares a nationwide emergency.',
+        date: '2020-03-13',
+        offset: { dy: -30, dx: -100 }
+    }]
+</script>
