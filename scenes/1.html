@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Data Visualization - Narrative Visualization - Scene 1</title>
+        <link rel="icon" type="image/png" sizes="32x32" href="favicons/favicon-32x32.png">
+        <script src="https://d3js.org/d3.v7.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
+        <script src="../index.js"></script>
+        <link rel="stylesheet" type="text/css" href="../index.css" />
+    </head>
+    <body>
+        <h1>The beginning of COVID-19 Pandemic</h1>
+        <div class="content">
+            <section class="col-1">
+                <svg id="canvas" onload="lineChart('../data', 1, '#canvas', '#tooltip')"></svg>
+                <div id="tooltip" class="tooltip"></div>
+            </section>
+            <!-- <section class="col-2">
+                <svg id="canvas-2" onload="lineChart('../data', 1, '#canvas-2', '#tooltip-2')"></svg>
+                <div id="tooltip-2" class="tooltip"></div>
+            </section> -->
+        </div>
+    </body>
+</html>
