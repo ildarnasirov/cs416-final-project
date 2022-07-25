@@ -77,11 +77,17 @@ class State {
             objects: countryObjects,
             dates: countryData
         }
+
+        this.inverseLookup = {}
+        for (let i = 0; i < this.dates.length; i++) {
+            this.inverseLookup[this.dates[i]] = i
+        }
     }
 
     lineChart (canvasSelector, tooltipSelector, renderAnnotation) {
         // solidify `this` context
         const data = this.data
+        const inverseLookup = this.inverseLookup
 
         // Adapted from https://d3-graph-gallery.com/graph/line_basic.html    
         // Define Axis
@@ -129,8 +135,8 @@ class State {
             .style('stroke', 'black')
             .style('stroke-width', '0.1em')
             .on('mouseover', function (event, date) {
-                this.style['stroke-width'] = '0.25em'
-                this.style.stroke = 'darkblue'
+                this.style['stroke-width'] = '0.4em'
+                this.style.stroke = 'green'
                 setTimeout(() => {
                     tooltip.style('opacity', 1)
                         .style('left', `${event.pageX}px`)
@@ -146,6 +152,13 @@ class State {
                 this.style['stroke-width'] = '0.1em'
                 this.style.stroke = 'black'
                 setTimeout(() => tooltip.style('opacity', 0), 5000)
+            })
+            .on('click', (e, date) => {
+                // https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
+                const datepicker = document.getElementById('datepicker')
+                datepicker.setAttribute('value', inverseLookup[date])
+                const event = new Event('input', { target: datepicker })
+                datepicker.dispatchEvent(event)
             })
         
         // Define Axis
