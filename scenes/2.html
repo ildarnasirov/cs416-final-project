@@ -9,12 +9,12 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The beginning of COVID-19 Pandemic</h1>
+        <h1>The first introduction of vaccines</h1>
         <div>
-            <a href="../index.html">
-                <input type="button" value="Return to Start"></input>
+            <a href="./1.html">
+                <input type="button" value="Previous Slide"></input>
             </a>
-            <a href="./2.html">
+            <a href="./3.html">
                 <input type="button" value="Next Slide"></input>
             </a>
         </div>
@@ -36,26 +36,30 @@
 </html>
 <script>
     const DATA = [{
-        label: 'The White House Coronavirus Task Force is established.',
-        date: '2020-01-29',
-        offset: { dy: -50, dx: 50}
+        label: 'Sandra Lindsay, a nurse in New York, becomes the first American outside a clinical trial to receive the COVID-19 vaccine.',
+        date: '2020-12-14',
+        offset: { dy: -10, dx: 150 } 
     },{
-        label: 'The World Health Organization declares COVID-19 a pandemic.',
-        date: '2020-03-11',
-        offset: { dy: -20, dx: -100 }
+        label: 'One year anniversary of CDC COVID-19 pandemic response.',
+        date: '2021-01-07',
+        offset: { dy: -30, dx: -10 }
     },{
-        label: 'President Donald J. Trump declares a nationwide emergency.',
-        date: '2020-03-13',
-        offset: { dy: -30, dx: -100 }
+        label: 'Worldwide COVID-19 cases surpass 100 million.',
+        date: '2021-01-26',
+        offset: { dy: 50, dx: 50 }
+    },{
+        label: 'U.S. surpasses 100 million vaccinations administered.',
+        date: '2021-03-13',
+        offset: { dy: -10, dx: -50 }
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2020-01-21', end: '2020-03-14' },
+            { start: '2020-12-14', end: '2021-03-14' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 50, height: 300, width: 500 }
+            { margin: 70, height: 300, width: 500 }
         )
     }
 </script>

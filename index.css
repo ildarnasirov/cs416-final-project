@@ -48,3 +48,13 @@ text.annotation-note-label {
     width: 50%;
     margin-left: 50%;
 }
+
+.datepicker-content {
+    text-align: right; 
+    margin-right: 50px;
+}
+
+.debug-border {
+    border-style: dashed;
+    border-width: 1px;
+}

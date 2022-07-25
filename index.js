@@ -2,23 +2,41 @@
 const formatNumber = (x = 0) =>
     x.toLocaleString (undefined, { minimumFractionDigits: 0 })
 
+const filterTimeArray = (data, start, end) => {
+    const startDate = (new Date (start)).getTime()
+    const endDate = (new Date (end)).getTime()
+
+    const result = []
+    for (let i = 0; i < data.length; i++) {
+        const currTime = (new Date (data[i].date)).getTime()
+        if (currTime <= endDate && currTime >= startDate) {
+            result.push(data[i])
+        } else if (currTime > endDate) {
+            break
+        }
+    }
+    return result
+}
+
 class State {
     static LEVEL_HIERARCHY = { COUNTRY: 0, STATE: 1, COUNTY: 2 }
-    static async load_data_with_dates (url, hierarchy) {
+    static async load_data_with_dates (url, hierarchy, start, end) {
         const dates = {}
         const data = await d3.csv(url)
-        data.forEach(datum => { dates[datum.date] = {} })
+        const filteredData = filterTimeArray (data, start, end)
+        filteredData.forEach(datum => { dates[datum.date] = {} })
     
         switch (hierarchy) {
             case State.LEVEL_HIERARCHY.COUNTRY:
-                data.forEach(({ date, cases, deaths }) => {
+                filteredData.forEach(({ date, cases, deaths }) => {
                     dates[date] = { 
-                        cases: parseInt(cases), deaths: parseInt(deaths)
+                        cases: parseInt(cases), 
+                        deaths: parseInt(deaths)
                     }
                 })
                 return dates
             case State.LEVEL_HIERARCHY.STATE:
-                data.forEach(({ date, state, cases, deaths }) => {
+                filteredData.forEach(({ date, state, cases, deaths }) => {
                     dates[date][state] = { 
                         cases: parseInt(cases), deaths: parseInt(deaths)
                     }
@@ -29,20 +47,22 @@ class State {
         }
     }
 
-    constructor (scene) {
+    constructor (scene, margin, height, width) {
         this.scene = scene
-        this.margin = 50, this.height = 300, this.width = 500
+        this.margin = margin, this.height = height, this.width = width
         this.timeParser = d3.timeParse("%Y-%m-%d")
     }
 
-    async load_data () {
+    async load_data (start, end) {
         const countryData = await State.load_data_with_dates (
-            `/data/us-${this.scene}.csv`, 
-            State.LEVEL_HIERARCHY.COUNTRY
+            `/data/us.csv`, 
+            State.LEVEL_HIERARCHY.COUNTRY,
+            start, end
         )
         const stateData = await State.load_data_with_dates (
-            `/data/us-states-${this.scene}.csv`, 
-            State.LEVEL_HIERARCHY.STATE
+            `/data/us-states.csv`,
+            State.LEVEL_HIERARCHY.STATE,
+            start, end
         )
         const countryObjects = Object.values (countryData)
         const stateObjects = Object.values (stateData)
@@ -70,7 +90,10 @@ class State {
             .range([ 0, this.width ])
     
         const y = d3.scaleLinear()
-            .domain([0, d3.max(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases)])
+            .domain([
+                d3.min(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases - 1),
+                d3.max(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases + 1)
+            ])
             .range([ this.height, 0 ])
 
         // Create Annotations
@@ -108,8 +131,7 @@ class State {
             .on('mouseover', function (event, date) {
                 this.style['stroke-width'] = '0.25em'
                 this.style.stroke = 'darkblue'
-                setTimeout(function() {
-                    console.log(this.data)
+                setTimeout(() => {
                     tooltip.style('opacity', 1)
                         .style('left', `${event.pageX}px`)
                         .style('top', `${event.pageY}px`)
@@ -184,9 +206,9 @@ class State {
                     .html(`
                         <strong>${state}</strong>
                         <hr/>
-                        Cases: ${filteredData[state].cases}
+                        Cases: ${formatNumber(filteredData[state].cases)}
                         <br/>
-                        Deaths: ${filteredData[state].deaths}
+                        Deaths: ${formatNumber(filteredData[state].deaths)}
                     `)
             }, 100)
 
@@ -233,9 +255,12 @@ class State {
     }
 }
 
-async function init (data, scene, selectors) {
+async function init (data, scene, { start, end }, selectors, datepickerIds, { margin, height, width }) {
     const RADIUS = 5
-    const state = new State (scene); await state.load_data ()
+    const state = new State (scene, margin, height, width)
+    await state.load_data (start, end)
+    
+    // init line chart
     state.lineChart (selectors[0], selectors[1], (x, y) => {
         State.addFixedAnnotations (
             selectors[0], data.map(datum => State.generateAnnotation ({
@@ -247,7 +272,24 @@ async function init (data, scene, selectors) {
             }))
         )
     })
+    
+    // init scatter plot
     state.scatterPlot(state.dates[0], selectors[2], selectors[3])
+
+    // add interactions
+    const datePicker = document.getElementById(datepickerIds[0])
+    const datePickerText = document.getElementById(datepickerIds[1])
+
+    datePicker.setAttribute('max', state.dates.length - 1)
+
+    // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range
+    datePicker.addEventListener('input', event => {
+        const date = state.dates[parseInt(event.target.value)]
+        datePickerText.innerHTML = `Currently Selected Date: <strong>${date}</strong>`
+        updateScatterPlot (state, date, [selectors[2], selectors[3]])
+    })
+    datePickerText.innerHTML = `Currently Selected Date: <strong>${state.dates[0]}</strong>`
+
     return state
 }
 
