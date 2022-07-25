@@ -59,7 +59,10 @@ class State {
         }
     }
 
-    lineChart (canvasSelector, tooltipSelector) {
+    lineChart (canvasSelector, tooltipSelector, renderAnnotation) {
+        // solidify `this` context
+        const data = this.data
+
         // Adapted from https://d3-graph-gallery.com/graph/line_basic.html    
         // Define Axis
         const x = d3.scaleTime()
@@ -67,12 +70,12 @@ class State {
             .range([ 0, this.width ])
     
         const y = d3.scaleLinear()
-            .domain([0, d3.max(this.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases)])
+            .domain([0, d3.max(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases)])
             .range([ this.height, 0 ])
 
-        console.log(this.data)
-        console.log(this)
-    
+        // Create Annotations
+        renderAnnotation (x, y)
+
         // Define main canvas - linechart
         d3.select(canvasSelector)
             .attr('width', this.width + 2 * this.margin)
@@ -85,7 +88,7 @@ class State {
             .attr('stroke-width', 1.5)
             .attr('d', d3.line()
                 .x(date => x(this.timeParser(date)))
-                .y(date => y(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
+                .y(date => y(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
             )
     
         const tooltip = d3.select(tooltipSelector)
@@ -98,19 +101,20 @@ class State {
                 .attr('transform', `translate(${this.margin},${this.margin})`)
             .selectAll().data(this.dates).enter().append('circle')
             .attr('cx', date => x(this.timeParser(date)))
-            .attr('cy', date => y(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
+            .attr('cy', date => y(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
             .attr('r', 2)
             .style('stroke', 'black')
             .style('stroke-width', '0.1em')
             .on('mouseover', function (event, date) {
                 this.style['stroke-width'] = '0.25em'
                 this.style.stroke = 'darkblue'
-                setTimeout(() => {
+                setTimeout(function() {
+                    console.log(this.data)
                     tooltip.style('opacity', 1)
                         .style('left', `${event.pageX}px`)
                         .style('top', `${event.pageY}px`)
                         .html(`
-                            Cases: ${formatNumber(this.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases)}
+                            Cases: ${formatNumber(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases)}     
                             <br>
                             Date: ${date}
                         `)
@@ -146,11 +150,11 @@ class State {
 
         // Define Axis
         const x = d3.scaleLinear()
-            .domain([ 1, d3.max(states, state => filteredData[state].cases) + 1 ])
+            .domain([ 0, d3.max(states, state => filteredData[state].cases) + 1 ])
             .range([ 0, this.width ])
     
         const y = d3.scaleLinear()
-            .domain([ 1, d3.max(states, state => filteredData[state].deaths) + 1 ])
+            .domain([ 0, d3.max(states, state => filteredData[state].deaths) + 1 ])
             .range([ this.height, 0 ])
         const tooltip = d3.select(tooltipSelector)
 
@@ -173,7 +177,6 @@ class State {
         .on('mouseover', function (event, state) {
             this.style['stroke-width'] = '0.25em'
             this.style.stroke = 'darkblue'
-            console.log(state)
             setTimeout(() => {
                 tooltip.style('opacity', 1)
                     .style('left', `${event.pageX}px`)
@@ -191,7 +194,7 @@ class State {
         .on('mouseout', function () {
             this.style['stroke-width'] = '0.1em'
             this.style.stroke = 'black'
-            setTimeout(() => tooltip.style('opacity', 0), 5000)
+            setTimeout(() => tooltip.style('opacity', 0), 2000)
         })
 
         // https://www.geeksforgeeks.org/d3-js-axis-tickvalues-function/
@@ -200,14 +203,14 @@ class State {
             .append('g')
         .attr('transform',`translate(${this.margin},${this.margin})`)
         .call (
-            d3.axisLeft(y).tickFormat(d3.format(".0s"))
+            d3.axisLeft(y)
         )
 
         d3.select(canvasSelector)
             .append('g')
         .attr('transform',`translate(${this.margin},${this.height + this.margin})`)
         .call (
-            d3.axisBottom(x).tickFormat(d3.format(".0s"))
+            d3.axisBottom(x)
         )
 
         return { x, y }
@@ -230,20 +233,27 @@ class State {
     }
 }
 
-async function main (data, scene, selectors) {
+async function init (data, scene, selectors) {
     const RADIUS = 5
     const state = new State (scene); await state.load_data ()
-    const { x: lineChartX, y: lineChartY } = state.lineChart (
-        selectors[0], selectors[1]
-    )
-    const annotations = data.map(datum => State.generateAnnotation ({
-        x: lineChartX (state.timeParser(datum.date)),
-        y: lineChartY (state.data[State.LEVEL_HIERARCHY.COUNTRY].dates[datum.date].cases),
-        dy: datum.offset.dy, dx: datum.offset.dx,
-        radius: RADIUS, margin: state.margin,
-        label: datum.label
-    }))
-    State.addFixedAnnotations (selectors[0], annotations)
+    state.lineChart (selectors[0], selectors[1], (x, y) => {
+        State.addFixedAnnotations (
+            selectors[0], data.map(datum => State.generateAnnotation ({
+                y: y (state.data[State.LEVEL_HIERARCHY.COUNTRY].dates[datum.date].cases),
+                x: x (state.timeParser(datum.date)),
+                dy: datum.offset.dy, dx: datum.offset.dx,
+                radius: RADIUS, margin: state.margin,
+                label: datum.label
+            }))
+        )
+    })
+    state.scatterPlot(state.dates[0], selectors[2], selectors[3])
+    return state
+}
 
-    state.scatterPlot(data[0].date, selectors[2], selectors[3])
+function updateScatterPlot (state, date, selectors) {
+    // https://reactgo.com/d3js-remove-svg/
+    d3.select(selectors[0]).selectAll('*').remove()
+    d3.select(selectors[1]).selectAll('*').remove()
+    state.scatterPlot(date, selectors[0], selectors[1])
 }

@@ -8,7 +8,7 @@
         <script src="../index.js"></script>
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
-    <body onload="main (DATA, 1, ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'])">
+    <body onload="main()">
         <h1>The beginning of COVID-19 Pandemic</h1>
         <div class="content">
             <section class="col-1">
@@ -19,6 +19,13 @@
                 <svg id="canvas-2"></svg>
                 <div id="tooltip-2" class="tooltip"></div>
             </section>
+        </div>
+        <div class="center-section is-center">
+            <!-- <label for="start">Pick a date:</label>
+            <input type="date" id="datepicker"
+                name="trip-start" value="2020-01-21" min="2020-01-21" max="2020-03-14"></input> -->
+            <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
+            <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
         </div>
     </body>
 </html>
@@ -36,4 +43,18 @@
         date: '2020-03-13',
         offset: { dy: -30, dx: -100 }
     }]
+
+    async function main () {
+        const state = await init (DATA, 1, ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'])
+        const datePicker = document.getElementById('datepicker')
+        datePicker.setAttribute('max', state.dates.length - 1)
+        const datePickerText = document.getElementById('datepicker-text')
+        datePickerText.innerText = `Currently Selected Date: ${state.dates[0]}`
+
+        datePicker.addEventListener('input', function (event) {
+            const date = state.dates[parseInt(event.target.value)]
+            datePickerText.innerText = `Currently Selected Date: ${date}`
+            updateScatterPlot (state, date, ['#canvas-2', '#tooltip-2'])
+        })
+    }
 </script>
