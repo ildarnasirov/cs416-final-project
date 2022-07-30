@@ -166,7 +166,14 @@ class State {
             .append('g')
         .attr('transform', `translate(${this.margin},${this.margin})`)
         .call(d3.axisLeft(y))
-    
+        .append('g')
+            .attr('transform', `translate(${-this.margin + 10}, ${this.height / 2})`)
+        .append('text')
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'black')
+            .attr('transform', 'rotate(-90)')
+            .text('Cases')
+        
         // https://stackoverflow.com/questions/15471224/how-to-format-time-on-xaxis-use-d3-js
         d3.select(canvasSelector)
             .append('g')
@@ -174,6 +181,10 @@ class State {
         .call(
             d3.axisBottom(x).tickFormat(d3.timeFormat('%m-%d'))
         )
+        .append('text')
+        .attr('fill', 'black')//set the fill here
+        .attr('transform', `translate(${(this.width + this.margin)/ 2}, 50)`)
+        .text('Date')
 
         // return axis for data transformation
         return { x, y }
@@ -234,19 +245,32 @@ class State {
 
         // https://www.geeksforgeeks.org/d3-js-axis-tickvalues-function/
         // https://observablehq.com/@d3/d3-format
+        // https://stackoverflow.com/questions/11189284/d3-axis-labeling
         d3.select(canvasSelector)
             .append('g')
         .attr('transform',`translate(${this.margin},${this.margin})`)
         .call (
             d3.axisLeft(y)
         )
+        .append('g')
+            .attr('transform', `translate(${-this.margin + 25}, ${this.height / 2})`)
+        .append('text')
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'black')
+            .attr('transform', 'rotate(-90)')
+            .text('Deaths')
 
+        // https://stackoverflow.com/questions/42388002/d3-axis-label-has-to-be-added-separately
         d3.select(canvasSelector)
             .append('g')
         .attr('transform',`translate(${this.margin},${this.height + this.margin})`)
         .call (
             d3.axisBottom(x)
         )
+        .append('text')
+        .attr('fill', 'black')
+        .attr('transform', `translate(${(this.width + this.margin)/ 2}, 50)`)
+        .text('Cases')
 
         return { x, y }
     }
@@ -291,9 +315,9 @@ async function init (data, scene, { start, end }, selectors, datepickerIds, { ma
 
     // add interactions
     const datePicker = document.getElementById(datepickerIds[0])
-    const datePickerText = document.getElementById(datepickerIds[1])
-
     datePicker.setAttribute('max', state.dates.length - 1)
+    const datePickerText = document.getElementById(datepickerIds[1])
+    datePickerText.innerHTML = `Currently Selected Date: <strong>${state.dates[0]}</strong>`
 
     // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range
     datePicker.addEventListener('input', event => {
@@ -301,8 +325,6 @@ async function init (data, scene, { start, end }, selectors, datepickerIds, { ma
         datePickerText.innerHTML = `Currently Selected Date: <strong>${date}</strong>`
         updateScatterPlot (state, date, [selectors[2], selectors[3]])
     })
-    datePickerText.innerHTML = `Currently Selected Date: <strong>${state.dates[0]}</strong>`
-
     return state
 }
 
