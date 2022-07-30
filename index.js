@@ -75,22 +75,19 @@ class State {
         const stateObjects = Object.values (stateData)
 
         this.dates = Object.keys (countryData)
+        this.date = this.dates[0]
+
         this.data = {}
         this.data[State.LEVEL_HIERARCHY.STATE] = { 
-            objects: stateObjects, 
-            dates: stateData
+            objects: stateObjects, dates: stateData
         }
         this.data[State.LEVEL_HIERARCHY.COUNTRY] = { 
-            objects: countryObjects,
-            dates: countryData
+            objects: countryObjects, dates: countryData
         }
 
+        // inverse lookup for easy search
         this.inverseLookup = {}
-        for (let i = 0; i < this.dates.length; i++) {
-            this.inverseLookup[this.dates[i]] = i
-        }
-
-        this.date = this.dates[0]
+        this.dates.forEach((d, i) => this.inverseLookup[d] = i)
 
         // add interactions
         this.datepickerIds[0].setAttribute('max', this.dates.length - 1)
