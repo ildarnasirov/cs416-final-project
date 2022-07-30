@@ -131,7 +131,7 @@ class State {
             .selectAll().data(this.dates).enter().append('circle')
             .attr('cx', date => x(this.timeParser(date)))
             .attr('cy', date => y(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
-            .attr('r', 2)
+            .attr('r', 1)
             .style('stroke', 'black')
             .style('stroke-width', '0.1em')
             .on('mouseover', function (event, date) {
@@ -151,7 +151,7 @@ class State {
             .on('mouseout', function () {
                 this.style['stroke-width'] = '0.1em'
                 this.style.stroke = 'black'
-                setTimeout(() => tooltip.style('opacity', 0), 5000)
+                setTimeout(() => tooltip.style('opacity', 0), 2000)
             })
             .on('click', (e, date) => {
                 // https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript

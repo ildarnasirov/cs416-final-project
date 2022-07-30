@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Data Visualization - Narrative Visualization - Scene 1</title>
+        <title>Data Visualization - Narrative Visualization - Scene 3</title>
         <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
@@ -9,7 +9,7 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The Delta Variant</h1>
+        <h1>The Delta Variant Start</h1>
         <div>
             <a href="./2.html">
                 <input type="button" value="Previous Slide"></input>
@@ -38,24 +38,24 @@
     const DATA = [{
         label: 'U.S. surpasses 200 million vaccinations administered.',
         date: '2021-04-21',
-        offset: { dy: -100, dx: -5 } 
+        offset: { dy: -25, dx: 75 } 
     },{
         label: 'The Delta variant, first identified in India in late 2020, becomes the dominant variant in the U.S. The variant kicks off a third wave of infections during the summer of 2021.',
         date: '2021-06-01',
-        offset: { dy: 80, dx: -5 }
+        offset: { dy: 15, dx: 15 }
     },{
         label: 'After a substantial upswing in cases due to the Delta variant, CDC releases updated guidance for everyone in areas with substantial or high transmission to wear a mask while indoors.',
         date: '2021-07-27',
-        offset: { dy: 80, dx: -5 }
+        offset: { dy: 15, dx: -100 }
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2021-03-20', end: '2021-07-31' },
+            { start: '2021-04-18', end: '2021-07-27' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 70, height: 300, width: 500 }
+            { margin: 75, height: 500, width: 700 }
         )
     }
 </script>
