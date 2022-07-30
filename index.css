@@ -35,25 +35,6 @@ text.annotation-note-label {
     font-size: 0.75em;
 }
 
-/* https://stackoverflow.com/questions/2716955/aligning-two-divs-side-by-side */
-.content { 
-    margin: 0 auto;
-}
-.col-1 {
-    width: 50%;
-    float: left;
-}
-
-.col-2 {
-    width: 50%;
-    margin-left: 50%;
-}
-
-.datepicker-content {
-    text-align: right; 
-    margin-right: 50px;
-}
-
 .debug-border {
     border-style: dashed;
     border-width: 1px;

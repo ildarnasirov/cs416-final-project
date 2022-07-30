@@ -1,3 +1,5 @@
+const RADIUS = 5
+
 // https://stackoverflow.com/questions/5731193/how-to-format-numbers
 const formatNumber = (x = 0) =>
     x.toLocaleString (undefined, { minimumFractionDigits: 0 })
@@ -25,7 +27,7 @@ class State {
         const data = await d3.csv(url)
         const filteredData = filterTimeArray (data, start, end)
         filteredData.forEach(datum => { dates[datum.date] = {} })
-    
+
         switch (hierarchy) {
             case State.LEVEL_HIERARCHY.COUNTRY:
                 filteredData.forEach(({ date, cases, deaths }) => {
@@ -47,10 +49,15 @@ class State {
         }
     }
 
-    constructor (scene, margin, height, width) {
+    constructor (scene, margin, height, width, selectors, datepickerIds) {
         this.scene = scene
         this.margin = margin, this.height = height, this.width = width
         this.timeParser = d3.timeParse("%Y-%m-%d")
+        this.backup = { }
+        this.date = ''
+        this.selectors = selectors
+        this.datepickerIds = datepickerIds
+            .map (id => document.getElementById (id))
     }
 
     async load_data (start, end) {
@@ -82,57 +89,62 @@ class State {
         for (let i = 0; i < this.dates.length; i++) {
             this.inverseLookup[this.dates[i]] = i
         }
+
+        this.date = this.dates[0]
+
+        // add interactions
+        this.datepickerIds[0].setAttribute('max', this.dates.length - 1)
+        this.datepickerIds[1].innerHTML = `Currently Selected Date: <strong>${this.date}</strong>`
     }
 
-    lineChart (canvasSelector, tooltipSelector, renderAnnotation) {
+    lineChart (renderAnnotation) {
         // solidify `this` context
-        const data = this.data
-        const inverseLookup = this.inverseLookup
+        const STATE = this
 
-        // Adapted from https://d3-graph-gallery.com/graph/line_basic.html    
+        // Adapted from https://d3-graph-gallery.com/graph/line_basic.html
         // Define Axis
         const x = d3.scaleTime()
-            .domain(d3.extent(this.dates, this.timeParser))
-            .range([ 0, this.width ])
-    
+            .domain(d3.extent(STATE.dates, STATE.timeParser))
+            .range([ 0, STATE.width ])
+
         const y = d3.scaleLinear()
             .domain([
-                d3.min(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases - 1),
-                d3.max(data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases + 1)
+                d3.min(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases - 1),
+                d3.max(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases + 1)
             ])
-            .range([ this.height, 0 ])
+            .range([ STATE.height, 0 ])
 
         // Create Annotations
         renderAnnotation (x, y)
 
         // Define main canvas - linechart
-        d3.select(canvasSelector)
-            .attr('width', this.width + 2 * this.margin)
-            .attr('height', this.height + 2 * this.margin)
+        d3.select(STATE.selectors[0])
+            .attr('width', STATE.width + 2 * STATE.margin)
+            .attr('height', STATE.height + 2 * STATE.margin)
             .append('g')
-                .attr('transform', `translate(${this.margin},${this.margin})`)
-            .datum(this.dates).append('path')
+                .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+            .datum(STATE.dates).append('path')
             .attr('fill', 'none')
             .attr('stroke', 'steelblue')
             .attr('stroke-width', 1.5)
             .attr('d', d3.line()
-                .x(date => x(this.timeParser(date)))
-                .y(date => y(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
+                .x(date => x(STATE.timeParser(date)))
+                .y(date => y(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
             )
-    
-        const tooltip = d3.select(tooltipSelector)
-        
+
+        const tooltip = d3.select(STATE.selectors[1])
+
         // define main canvas - points and tooltip
-        d3.select(canvasSelector)
-            .attr('width', this.width + 2 * this.margin)
-            .attr('height', this.height + 2 * this.margin)
+        d3.select(STATE.selectors[0])
+            .attr('width', STATE.width + 2 * STATE.margin)
+            .attr('height', STATE.height + 2 * STATE.margin)
             .append('g')
-                .attr('transform', `translate(${this.margin},${this.margin})`)
-            .selectAll().data(this.dates).enter().append('circle')
-            .attr('cx', date => x(this.timeParser(date)))
-            .attr('cy', date => y(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
-            .attr('r', 1)
-            .style('stroke', 'black')
+                .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+            .selectAll().data(STATE.dates).enter().append('circle')
+            .attr('cx', date => x(STATE.timeParser(date)))
+            .attr('cy', date => y(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
+            .attr('r', date => date === STATE.date ? 5 : 2)
+            .style('stroke', date => date === STATE.date ? 'blue' : 'black')
             .style('stroke-width', '0.1em')
             .on('mouseover', function (event, date) {
                 this.style['stroke-width'] = '0.4em'
@@ -142,74 +154,73 @@ class State {
                         .style('left', `${event.pageX}px`)
                         .style('top', `${event.pageY}px`)
                         .html(`
-                            Cases: ${formatNumber(data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases)}     
+                            Cases: ${formatNumber(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases)}
                             <br>
                             Date: ${date}
                         `)
                 }, 100)
             })
-            .on('mouseout', function () {
+            .on('mouseout', function (e, date) {
                 this.style['stroke-width'] = '0.1em'
-                this.style.stroke = 'black'
+                this.style.stroke = (date === STATE.date) ? 'blue' : 'black'
                 setTimeout(() => tooltip.style('opacity', 0), 2000)
             })
             .on('click', (e, date) => {
-                // https://stackoverflow.com/questions/2490825/how-to-trigger-event-in-javascript
-                const datepicker = document.getElementById('datepicker')
-                datepicker.setAttribute('value', inverseLookup[date])
-                const event = new Event('input', { target: datepicker })
-                datepicker.dispatchEvent(event)
+                STATE.date = date
+                this.render (renderAnnotation)
             })
-        
+
         // Define Axis
-        d3.select(canvasSelector)
+        d3.select(STATE.selectors[0])
             .append('g')
-        .attr('transform', `translate(${this.margin},${this.margin})`)
+        .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
         .call(d3.axisLeft(y))
         .append('g')
-            .attr('transform', `translate(${-this.margin + 10}, ${this.height / 2})`)
+            .attr('transform', `translate(${-STATE.margin + 10}, ${STATE.height / 2})`)
         .append('text')
             .attr('text-anchor', 'middle')
             .attr('fill', 'black')
             .attr('transform', 'rotate(-90)')
             .text('Cases')
-        
+
         // https://stackoverflow.com/questions/15471224/how-to-format-time-on-xaxis-use-d3-js
-        d3.select(canvasSelector)
+        d3.select(STATE.selectors[0])
             .append('g')
-        .attr('transform', `translate(${this.margin},${this.margin + this.height})`)
+        .attr('transform', `translate(${STATE.margin},${STATE.margin + STATE.height})`)
         .call(
             d3.axisBottom(x).tickFormat(d3.timeFormat('%m-%d'))
         )
         .append('text')
         .attr('fill', 'black')//set the fill here
-        .attr('transform', `translate(${(this.width + this.margin)/ 2}, 50)`)
+        .attr('transform', `translate(${(STATE.width + STATE.margin) / 2}, 50)`)
         .text('Date')
 
         // return axis for data transformation
         return { x, y }
     }
 
-    scatterPlot (date, canvasSelector, tooltipSelector) {
-        const filteredData = this.data[State.LEVEL_HIERARCHY.STATE].dates[date]
+    scatterPlot () {
+        const STATE = this
+        const filteredData = STATE.data[State.LEVEL_HIERARCHY.STATE].dates[STATE.date]
         const states = Object.keys (filteredData)
 
         // Define Axis
         const x = d3.scaleLinear()
             .domain([ 0, d3.max(states, state => filteredData[state].cases) + 1 ])
-            .range([ 0, this.width ])
-    
+            .range([ 0, STATE.width ])
+
         const y = d3.scaleLinear()
             .domain([ 0, d3.max(states, state => filteredData[state].deaths) + 1 ])
-            .range([ this.height, 0 ])
-        const tooltip = d3.select(tooltipSelector)
+            .range([ STATE.height, 0 ])
 
-        d3.select(canvasSelector)
-            .attr('width', this.width + 2 * this.margin)
-            .attr('height', this.height + 2 * this.margin)
+        const tooltip = d3.select(STATE.selectors[3])
+
+        d3.select(STATE.selectors[2])
+            .attr('width', STATE.width + 2 * STATE.margin)
+            .attr('height', STATE.height + 2 * STATE.margin)
         .append('g')
-            .attr('transform', `translate(${this.margin},${this.margin})`)
-            .text(`Cases vs. Deaths on ${date}`)
+            .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+            .text(`Cases vs. Deaths on ${STATE.date}`)
         .selectAll()
             .data(states).enter()
         .append('circle')
@@ -246,14 +257,14 @@ class State {
         // https://www.geeksforgeeks.org/d3-js-axis-tickvalues-function/
         // https://observablehq.com/@d3/d3-format
         // https://stackoverflow.com/questions/11189284/d3-axis-labeling
-        d3.select(canvasSelector)
+        d3.select(STATE.selectors[2])
             .append('g')
-        .attr('transform',`translate(${this.margin},${this.margin})`)
+        .attr('transform',`translate(${STATE.margin},${STATE.margin})`)
         .call (
             d3.axisLeft(y)
         )
         .append('g')
-            .attr('transform', `translate(${-this.margin + 25}, ${this.height / 2})`)
+            .attr('transform', `translate(${-STATE.margin + 25}, ${STATE.height / 2})`)
         .append('text')
             .attr('text-anchor', 'middle')
             .attr('fill', 'black')
@@ -261,15 +272,15 @@ class State {
             .text('Deaths')
 
         // https://stackoverflow.com/questions/42388002/d3-axis-label-has-to-be-added-separately
-        d3.select(canvasSelector)
+        d3.select(STATE.selectors[2])
             .append('g')
-        .attr('transform',`translate(${this.margin},${this.height + this.margin})`)
+        .attr('transform',`translate(${STATE.margin},${STATE.height + STATE.margin})`)
         .call (
             d3.axisBottom(x)
         )
         .append('text')
         .attr('fill', 'black')
-        .attr('transform', `translate(${(this.width + this.margin)/ 2}, 50)`)
+        .attr('transform', `translate(${(STATE.width + STATE.margin) / 2}, 50)`)
         .text('Cases')
 
         return { x, y }
@@ -290,47 +301,51 @@ class State {
             subject: { radius }
         }
     }
+
+    updateLineChart (renderAnnotation) {
+        const STATE = this
+        d3.select(STATE.selectors[0]).selectAll('*').remove()
+        d3.select(STATE.selectors[1]).selectAll('*').remove()
+        STATE.lineChart (renderAnnotation)
+    }
+
+    updateScatterPlot () {
+        // https://reactgo.com/d3js-remove-svg/
+        d3.select(this.selectors[2]).selectAll('*').remove()
+        d3.select(this.selectors[3]).selectAll('*').remove()
+        this.scatterPlot()
+    }
+
+    render (renderAnnotation) {
+        this.datepickerIds[0].setAttribute('value', this.inverseLookup[this.date])
+        this.datepickerIds[1].innerHTML = `Currently Selected Date: <strong>${this.date}</strong>`
+        this.updateScatterPlot ();
+        this.updateLineChart (renderAnnotation)
+    }
 }
 
 async function init (data, scene, { start, end }, selectors, datepickerIds, { margin, height, width }) {
-    const RADIUS = 5
-    const state = new State (scene, margin, height, width)
+    const state = new State (scene, margin, height, width, selectors, datepickerIds)
     await state.load_data (start, end)
-    
-    // init line chart
-    state.lineChart (selectors[0], selectors[1], (x, y) => {
-        State.addFixedAnnotations (
-            selectors[0], data.map(datum => State.generateAnnotation ({
+
+    const renderAnnotation = (x, y) => State.addFixedAnnotations (
+        selectors[0], 
+        data.map(datum => State.generateAnnotation ({
                 y: y (state.data[State.LEVEL_HIERARCHY.COUNTRY].dates[datum.date].cases),
                 x: x (state.timeParser(datum.date)),
                 dy: datum.offset.dy, dx: datum.offset.dx,
                 radius: RADIUS, margin: state.margin,
                 label: datum.label
-            }))
+            })
         )
-    })
-    
-    // init scatter plot
-    state.scatterPlot(state.dates[0], selectors[2], selectors[3])
+    )
 
-    // add interactions
-    const datePicker = document.getElementById(datepickerIds[0])
-    datePicker.setAttribute('max', state.dates.length - 1)
-    const datePickerText = document.getElementById(datepickerIds[1])
-    datePickerText.innerHTML = `Currently Selected Date: <strong>${state.dates[0]}</strong>`
+    state.render (renderAnnotation)
 
     // https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/range
-    datePicker.addEventListener('input', event => {
-        const date = state.dates[parseInt(event.target.value)]
-        datePickerText.innerHTML = `Currently Selected Date: <strong>${date}</strong>`
-        updateScatterPlot (state, date, [selectors[2], selectors[3]])
+    state.datepickerIds[0].addEventListener('input', function (event) {
+        state.date = state.dates[event.target.value]
+        state.render (renderAnnotation)
     })
     return state
-}
-
-function updateScatterPlot (state, date, selectors) {
-    // https://reactgo.com/d3js-remove-svg/
-    d3.select(selectors[0]).selectAll('*').remove()
-    d3.select(selectors[1]).selectAll('*').remove()
-    state.scatterPlot(date, selectors[0], selectors[1])
 }
