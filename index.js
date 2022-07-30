@@ -55,12 +55,12 @@ class State {
 
     async load_data (start, end) {
         const countryData = await State.load_data_with_dates (
-            `/data/us.csv`, 
+            `https://ildarnasirov.github.io/cs416-final-project/data/us.csv`, 
             State.LEVEL_HIERARCHY.COUNTRY,
             start, end
         )
         const stateData = await State.load_data_with_dates (
-            `/data/us-states.csv`,
+            `https://ildarnasirov.github.io/cs416-final-project/data/us-states.csv`,
             State.LEVEL_HIERARCHY.STATE,
             start, end
         )
