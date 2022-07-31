@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Data Visualization - Narrative Visualization - Scene 4</title>
+        <title>Data Visualization - Narrative Visualization - Scene 5</title>
         <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
@@ -9,13 +9,13 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h2>The Delta Variant - Growth</h2>
+        <h2>The Omicron Variant - Start and Growth</h2>
         <div class="controls">
-            <a href="./4.html">
+            <a href="./5.html">
                 <input type="button" value="Previous Slide"></input>
             </a>
-            <a href="./6.html">
-                <input type="button" value="Next Slide"></input>
+            <a href="./end.html">
+                <input type="button" value="Finish Presentation"></input>
             </a>
         </div>
         <div class="main-content">
@@ -26,7 +26,7 @@
             <div class="datepicker-content controls">
                 <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
                 <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
-            </div>
+            </div> 
             <section>
                 <svg id="canvas-2"></svg>
                 <div id="tooltip-2" class="tooltip"></div>
@@ -36,19 +36,19 @@
 </html>
 <script>
     const DATA = [{
-        label: 'After a substantial upswing in cases due to the Delta variant, CDC releases updated guidance for everyone in areas with substantial or high transmission to wear a mask while indoors.',
-        date: '2021-07-27',
-        offset: { dy: 30, dx: 30 } 
-    },{
-        label: 'New CDC study provides further evidence that COVID-19 vaccines offer higher protection than previous COVID-19 infection.',
-        date: '2021-10-29',
-        offset: { dy: 30, dx: -30 }
+        label: 'World Health Organization classifies a new variant, Omicron, as a variant of concern after it was first reported by scientists in South Africa. The variant has several mutations in the spike protein that concern scientists around the world.',
+        date: '2021-11-27',
+        offset: { dy: 15, dx: 25 } 
+    }, {
+        label: 'Omicron starts to plateau on its growth rate.',
+        date: '2022-02-11',
+        offset: { dy: 15, dx: 25 } 
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2021-07-25', end: '2021-11-01' },
+            { start: '2021-11-20', end: '2022-03-01' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
             { 

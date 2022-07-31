@@ -106,8 +106,8 @@ class State {
 
         const y = d3.scaleLinear()
             .domain([
-                d3.min(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases - 1),
-                d3.max(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases + 1)
+                0,
+                d3.max(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].objects, d => d.cases + 100)
             ])
             .range([ STATE.height, 0 ])
 

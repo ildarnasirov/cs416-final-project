@@ -9,7 +9,7 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h2>The Start of COVID-19 Pandemic</h2>
+        <h2>COVID-19 Pandemic - Discovery</h2>
         <div class="controls">
             <a href="../index.html">
                 <input type="button" value="Return to Splash Screen"></input>
@@ -38,28 +38,28 @@
     const DATA = [{
         label: 'The White House Coronavirus Task Force is established.',
         date: '2020-01-29',
-        offset: { dy: -50, dx: 50}
+        offset: { dy: -20, dx: 50}
     },{
         label: 'The World Health Organization declares COVID-19 a pandemic.',
         date: '2020-03-11',
-        offset: { dy: -20, dx: -100 }
+        offset: { dy: -60, dx: -100 }
     },{
         label: 'President Donald J. Trump declares a nationwide emergency.',
         date: '2020-03-13',
-        offset: { dy: -30, dx: -100 }
+        offset: { dy: -120, dx: -10 }
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2020-01-21', end: '2020-03-14' },
+            { start: '2020-01-21', end: '2020-03-30' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
             { 
                 height: 300, width: 600,
                 margin: {
                     left: 75,
-                    right: 50,
+                    right: 200,
                     up: 30,
                     down: 50
                 }

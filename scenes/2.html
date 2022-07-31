@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>Data Visualization - Narrative Visualization - Scene 2</title>
+        <title>Data Visualization - Narrative Visualization - Scene 1</title>
         <link rel="icon" type="image/png" sizes="32x32" href="../favicons/favicon-32x32.png">
         <script src="https://d3js.org/d3.v7.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
@@ -9,10 +9,10 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h2>The First Introduction of the Vaccines</h2>
+        <h2>The COVID-19 Pandemic - Early Growth</h2>
         <div class="controls">
             <a href="./1.html">
-                <input type="button" value="Previous Slide"></input>
+                <input type="button" value="Previos Slide"></input>
             </a>
             <a href="./3.html">
                 <input type="button" value="Next Slide"></input>
@@ -36,27 +36,19 @@
 </html>
 <script>
     const DATA = [{
-        label: 'Sandra Lindsay, a nurse in New York, becomes the first American outside a clinical trial to receive the COVID-19 vaccine.',
-        date: '2020-12-14',
-        offset: { dy: -75, dx: 15 }
-    },{
-        label: 'One year anniversary of CDC COVID-19 pandemic response.',
-        date: '2021-01-07',
-        offset: { dy: 10, dx: 50 }
-    },{
-        label: 'Worldwide COVID-19 cases surpass 100 million.',
-        date: '2021-01-26',
-        offset: { dy: 10, dx: 50 }
-    },{
-        label: 'U.S. surpasses 100 million vaccinations administered.',
-        date: '2021-03-13',
-        offset: { dy: 10, dx: 50 }
+        label: 'World Health Organization renews is emergency declaration from three months prior calling the pandemic a global health crisis.',
+        date: '2020-05-02',
+        offset: { dy: -50, dx: 50}
+    }, {
+        label: 'United States coronavirus (COVID-19) death toll surpasses 100,000.',
+        date: '2020-05-28',
+        offset: { dy: -50, dx: 50}
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2020-12-10', end: '2021-03-14' },
+            { start: '2020-04-30', end: '2020-07-14' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
             { 
