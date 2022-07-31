@@ -1,6 +1,6 @@
 .is-center {
     margin: auto;
-    width: 50%;
+    width: 80%;
     padding: 10px;
 }
 
@@ -33,6 +33,16 @@
 
 text.annotation-note-label {
     font-size: 0.75em;
+}
+
+.controls {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    padding: 5px;
+}
+
+.main-content {
+    margin-left: 25px;
 }
 
 .debug-border {

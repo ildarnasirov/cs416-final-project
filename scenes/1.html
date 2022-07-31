@@ -9,8 +9,8 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The Start of COVID-19 Pandemic</h1>
-        <div>
+        <h2>The Start of COVID-19 Pandemic</h2>
+        <div class="debug-border controls">
             <a href="../index.html">
                 <input type="button" value="Return to Splash Screen"></input>
             </a>
@@ -18,12 +18,12 @@
                 <input type="button" value="Next Slide"></input>
             </a>
         </div>
-        <div>
+        <div class="main-content">
             <section>
                 <svg id="canvas"></svg>
                 <div id="tooltip" class="tooltip"></div>
             </section>
-            <div class="datepicker-content">
+            <div class="datepicker-content controls">
                 <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
                 <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
             </div>
@@ -55,7 +55,15 @@
             { start: '2020-01-21', end: '2020-03-14' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 75, height: 500, width: 700 }
+            { 
+                height: 300, width: 600,
+                margin: {
+                    left: 75,
+                    right: 50,
+                    up: 30,
+                    down: 50
+                }
+            }
         )
     }
 </script>

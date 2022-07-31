@@ -9,8 +9,8 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The Omicron Variant - Start and Growth</h1>
-        <div>
+        <h2>The Omicron Variant - Start and Growth</h2>
+        <div class="controls">
             <a href="./4.html">
                 <input type="button" value="Previous Slide"></input>
             </a>
@@ -18,12 +18,12 @@
                 <input type="button" value="Finish Presentation"></input>
             </a>
         </div>
-        <div>
+        <div class="main-content">
             <section>
                 <svg id="canvas"></svg>
                 <div id="tooltip" class="tooltip"></div>
             </section>
-            <div class="datepicker-content">
+            <div class="datepicker-content controls">
                 <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
                 <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
             </div> 
@@ -48,10 +48,18 @@
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2021-11-27', end: '2022-03-01' },
+            { start: '2021-11-20', end: '2022-03-01' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 75, height: 500, width: 700 }
+            { 
+                height: 300, width: 600,
+                margin: {
+                    left: 75,
+                    right: 50,
+                    up: 30,
+                    down: 50
+                }
+            }
         )
     }
 </script>

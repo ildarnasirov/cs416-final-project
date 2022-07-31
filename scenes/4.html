@@ -9,8 +9,8 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The Delta Variant - Growth</h1>
-        <div>
+        <h2>The Delta Variant - Growth</h2>
+        <div class="controls">
             <a href="./3.html">
                 <input type="button" value="Previous Slide"></input>
             </a>
@@ -18,12 +18,12 @@
                 <input type="button" value="Next Slide"></input>
             </a>
         </div>
-        <div>
+        <div class="main-content">
             <section>
                 <svg id="canvas"></svg>
                 <div id="tooltip" class="tooltip"></div>
             </section>
-            <div class="datepicker-content">
+            <div class="datepicker-content controls">
                 <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
                 <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
             </div>
@@ -38,24 +38,32 @@
     const DATA = [{
         label: 'After a substantial upswing in cases due to the Delta variant, CDC releases updated guidance for everyone in areas with substantial or high transmission to wear a mask while indoors.',
         date: '2021-07-27',
-        offset: { dy: -120, dx: 25 } 
+        offset: { dy: -100, dx: 10 } 
     },{
         label: 'New CDC study provides further evidence that COVID-19 vaccines offer higher protection than previous COVID-19 infection.',
         date: '2021-10-29',
-        offset: { dy: 80, dx: -25 }
+        offset: { dy: 60, dx: -25 }
     },{
         label: 'World Health Organization classifies a new variant, Omicron, as a variant of concern after it was first reported by scientists in South Africa. The variant has several mutations in the spike protein that concern scientists around the world.',
         date: '2021-11-26',
-        offset: { dy: 80, dx: -5 }
+        offset: { dy: 60, dx: -5 }
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2021-07-27', end: '2021-11-27' },
+            { start: '2021-07-20', end: '2021-11-27' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 75, height: 500, width: 700 }
+            { 
+                height: 300, width: 600,
+                margin: {
+                    left: 75,
+                    right: 50,
+                    up: 30,
+                    down: 50
+                }
+            }
         )
     }
 </script>

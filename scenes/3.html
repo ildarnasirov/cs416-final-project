@@ -9,8 +9,8 @@
         <link rel="stylesheet" type="text/css" href="../index.css" />
     </head>
     <body onload="main()">
-        <h1>The Delta Variant - Start</h1>
-        <div>
+        <h2>The Delta Variant - Start</h2>
+        <div class="controls">
             <a href="./2.html">
                 <input type="button" value="Previous Slide"></input>
             </a>
@@ -18,12 +18,12 @@
                 <input type="button" value="Next Slide"></input>
             </a>
         </div>
-        <div>
+        <div class="main-content">
             <section>
                 <svg id="canvas"></svg>
                 <div id="tooltip" class="tooltip"></div>
             </section>
-            <div class="datepicker-content">
+            <div class="datepicker-content controls">
                 <input type="range" id="datepicker" name="datepicker" min="0" max="0" value="0">
                 <label id="datepicker-text" for="datepicker">Currently Selected Date: None</label>
             </div>  
@@ -38,24 +38,32 @@
     const DATA = [{
         label: 'U.S. surpasses 200 million vaccinations administered.',
         date: '2021-04-21',
-        offset: { dy: -25, dx: 75 } 
+        offset: { dy: -10, dx: 100 } 
     },{
         label: 'The Delta variant, first identified in India in late 2020, becomes the dominant variant in the U.S. The variant kicks off a third wave of infections during the summer of 2021.',
         date: '2021-06-01',
-        offset: { dy: 15, dx: 15 }
+        offset: { dy: -15, dx: -15 }
     },{
         label: 'After a substantial upswing in cases due to the Delta variant, CDC releases updated guidance for everyone in areas with substantial or high transmission to wear a mask while indoors.',
         date: '2021-07-27',
-        offset: { dy: 15, dx: -100 }
+        offset: { dy: 20, dx: 10 }
     }]
 
     async function main () {
         await init (
             DATA, 1, 
-            { start: '2021-04-18', end: '2021-07-27' },
+            { start: '2021-04-15', end: '2021-07-27' },
             ['#canvas', '#tooltip', '#canvas-2', '#tooltip-2'],
             ['datepicker', 'datepicker-text'],
-            { margin: 75, height: 500, width: 700 }
+            { 
+                height: 300, width: 600,
+                margin: {
+                    left: 75,
+                    right: 150,
+                    up: 30,
+                    down: 50
+                }
+            }
         )
     }
 </script>

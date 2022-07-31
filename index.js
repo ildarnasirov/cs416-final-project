@@ -116,10 +116,10 @@ class State {
 
         // Define main canvas - linechart
         d3.select(STATE.selectors[0])
-            .attr('width', STATE.width + 2 * STATE.margin)
-            .attr('height', STATE.height + 2 * STATE.margin)
+            .attr('width', STATE.width + STATE.margin.left + STATE.margin.right)
+            .attr('height', STATE.height + STATE.margin.up + STATE.margin.down)
             .append('g')
-                .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+                .attr('transform', `translate(${STATE.margin.left},${STATE.margin.up})`)
             .datum(STATE.dates).append('path')
             .attr('fill', 'none')
             .attr('stroke', 'steelblue')
@@ -133,10 +133,10 @@ class State {
 
         // define main canvas - points and tooltip
         d3.select(STATE.selectors[0])
-            .attr('width', STATE.width + 2 * STATE.margin)
-            .attr('height', STATE.height + 2 * STATE.margin)
+            .attr('width', STATE.width + STATE.margin.left + STATE.margin.right)
+            .attr('height', STATE.height + STATE.margin.up + STATE.margin.down)
             .append('g')
-                .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+                .attr('transform', `translate(${STATE.margin.left},${STATE.margin.up})`)
             .selectAll().data(STATE.dates).enter().append('circle')
             .attr('cx', date => x(STATE.timeParser(date)))
             .attr('cy', date => y(STATE.data[State.LEVEL_HIERARCHY.COUNTRY].dates[date].cases))
@@ -170,10 +170,10 @@ class State {
         // Define Axis
         d3.select(STATE.selectors[0])
             .append('g')
-        .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+        .attr('transform', `translate(${STATE.margin.left},${STATE.margin.up})`)
         .call(d3.axisLeft(y))
         .append('g')
-            .attr('transform', `translate(${-STATE.margin + 10}, ${STATE.height / 2})`)
+            .attr('transform', `translate(${-STATE.margin.left + 10}, ${STATE.height / 2})`)
         .append('text')
             .attr('text-anchor', 'middle')
             .attr('fill', 'black')
@@ -183,13 +183,13 @@ class State {
         // https://stackoverflow.com/questions/15471224/how-to-format-time-on-xaxis-use-d3-js
         d3.select(STATE.selectors[0])
             .append('g')
-        .attr('transform', `translate(${STATE.margin},${STATE.margin + STATE.height})`)
+        .attr('transform', `translate(${STATE.margin.left},${STATE.margin.up + STATE.height})`)
         .call(
             d3.axisBottom(x).tickFormat(d3.timeFormat('%m-%d'))
         )
         .append('text')
         .attr('fill', 'black')//set the fill here
-        .attr('transform', `translate(${(STATE.width + STATE.margin) / 2}, 50)`)
+        .attr('transform', `translate(${(STATE.width + STATE.margin.left) / 2}, ${STATE.margin.down - 10})`)
         .text('Date')
 
         // return axis for data transformation
@@ -213,10 +213,10 @@ class State {
         const tooltip = d3.select(STATE.selectors[3])
 
         d3.select(STATE.selectors[2])
-            .attr('width', STATE.width + 2 * STATE.margin)
-            .attr('height', STATE.height + 2 * STATE.margin)
+            .attr('width', STATE.width + STATE.margin.left + STATE.margin.right)
+            .attr('height', STATE.height + STATE.margin.up + STATE.margin.down)
         .append('g')
-            .attr('transform', `translate(${STATE.margin},${STATE.margin})`)
+            .attr('transform', `translate(${STATE.margin.left},${STATE.margin.up})`)
             .text(`Cases vs. Deaths on ${STATE.date}`)
         .selectAll()
             .data(states).enter()
@@ -256,12 +256,12 @@ class State {
         // https://stackoverflow.com/questions/11189284/d3-axis-labeling
         d3.select(STATE.selectors[2])
             .append('g')
-        .attr('transform',`translate(${STATE.margin},${STATE.margin})`)
+        .attr('transform',`translate(${STATE.margin.left},${STATE.margin.up})`)
         .call (
             d3.axisLeft(y)
         )
         .append('g')
-            .attr('transform', `translate(${-STATE.margin + 25}, ${STATE.height / 2})`)
+            .attr('transform', `translate(${-STATE.margin.left + 10}, ${STATE.height / 2})`)
         .append('text')
             .attr('text-anchor', 'middle')
             .attr('fill', 'black')
@@ -271,13 +271,13 @@ class State {
         // https://stackoverflow.com/questions/42388002/d3-axis-label-has-to-be-added-separately
         d3.select(STATE.selectors[2])
             .append('g')
-        .attr('transform',`translate(${STATE.margin},${STATE.height + STATE.margin})`)
+        .attr('transform',`translate(${STATE.margin.left},${STATE.height + STATE.margin.up})`)
         .call (
             d3.axisBottom(x)
         )
         .append('text')
         .attr('fill', 'black')
-        .attr('transform', `translate(${(STATE.width + STATE.margin) / 2}, 50)`)
+        .attr('transform', `translate(${(STATE.width + STATE.margin.left) / 2}, ${STATE.margin.down - 10})`)
         .text('Cases')
 
         return { x, y }
@@ -293,7 +293,7 @@ class State {
     static generateAnnotation ({ x, y, dy, dx, label, margin, radius }) {
         return {
             note: { label }, dy, dx,
-            x: margin + x, y: margin + y,
+            x: margin.left + x, y: margin.up + y,
             type: d3.annotationCalloutCircle,
             subject: { radius }
         }
