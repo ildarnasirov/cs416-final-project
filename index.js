@@ -225,7 +225,8 @@ class State {
             .attr('cy', state => y(filteredData[state].deaths))
             .attr('r', 4)
                 // Source https://stackoverflow.com/questions/13563471/random-colors-for-circles-in-d3-js-graph
-            .style('fill', (s, i) => `hsl(${100 * i}, 100%, 50%)`)
+                // https://www.w3schools.com/colors/colors_hsl.asp
+            .style('fill', (s, i) => `hsl(${360 * (i + 1) / states.length}, 100%, 50%)`)
             .style('stroke', 'black')
             .style('stroke-width', '0.1em')
         .on('mouseover', function (event, state) {
